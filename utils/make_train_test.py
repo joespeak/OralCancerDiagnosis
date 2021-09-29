@@ -87,6 +87,50 @@ def make_Peper_Out_Data(fileDir, trainDir, testDir):
             shutil.copy(os.path.join(fileDir, item), os.path.join(trainDir, item))
     return
 
+class MakeCrossValidationDataFolder():
+    def __init__(self, folds, samples ,allDataFile = r"../data"):
+        self.folds = folds
+        self.samples = samples
+        self.allDataFile = allDataFile
+
+
+    def make_Peper_Out_Data(self,fileDir, trainDir, testDir):
+        pathDir = os.listdir(fileDir)  # 取图片的原始路径
+
+        if self.samples >1:
+            samples = self.samples
+        elif self.samples <1:
+            samples = int(self.samples * len(pathDir))
+
+        sample = random.sample(pathDir, samples)  # 随机选取picknumber数量的样本图片
+
+
+        for name in sample:
+            shutil.copy(os.path.join(fileDir, name), os.path.join(testDir, name))
+
+        for item in pathDir:
+            if item not in sample:
+                shutil.copy(os.path.join(fileDir, item), os.path.join(trainDir, item))
+        return
+
+    def begin_split(self):
+        class_list = []
+        for item in glob.glob(self.allDataFile + r"/*"):
+            class_list.append(item.split("/")[-1])
+        print(class_list)
+        for i in range(self.folds):
+            if not os.path.exists(f"../{self.folds}crossValidationData/{i+1}"):
+                for cls in class_list:
+                    os.makedirs(f"../{self.folds}crossValidationData/{i+1}/train/{cls}")
+                    os.makedirs(f"../{self.folds}crossValidationData/{i+1}/test/{cls}")
+
+                    make_Peper_Out_Data(os.path.join(self.allDataFile, cls), f"../{self.folds}crossValidationData/{i+1}/train/{cls}",
+                                        f"../{self.folds}crossValidationData/{i+1}/test/{cls}")
+            else:
+                break
+        firstCrossDir = f"../{self.folds}crossValidationData/1"
+        return firstCrossDir
+
 
 if __name__ == '__main__':
 
